@@ -15,7 +15,7 @@ luminosity_sensor = ADC(Pin(32))  # Pino ADC para o sensor de luminosidade
 rain_sensor = ADC(Pin(35))  # Pino ADC para o sensor de chuva
 
 # Configuração do sensor DHT22 (temperatura e umidade)
-dht_sensor = dht.DHT22(Pin(4))  # Pino GPIO para o DHT22
+# dht_sensor = dht.DHT22(Pin(4))  # Pino GPIO para o DHT22
 
 # Configura a conexão Wi-Fi
 wlan = network.WLAN(network.STA_IF)
@@ -39,16 +39,17 @@ def read_sensors():
     luminosity_percentage = (1 - (luminosity_value / 4095)) * 100  # 0% com luz e 100% sem luz
     rain_percentage = (1 - (rain_value / 4095)) * 100  # 0% sem água e 100% com água
 
-    try:
-        dht_sensor.measure()
-        temperature = dht_sensor.temperature()  # Temperatura em Celsius
-        humidity = dht_sensor.humidity()  # Umidade em porcentagem
-    except OSError as e:
-        print(f"Erro na leitura do sensor DHT: {e}")
-        temperature = None
-        humidity = None
+    # try:
+    #     dht_sensor.measure()
+    #     temperature = dht_sensor.temperature()  # Temperatura em Celsius
+    #     humidity = dht_sensor.humidity()  # Umidade em porcentagem
+    # except OSError as e:
+    #     print(f"Erro na leitura do sensor DHT: {e}")
+    #     temperature = None
+    #     humidity = None
 
-    return luminosity_percentage, rain_percentage, temperature, humidity
+    # return luminosity_percentage, rain_percentage, temperature, humidity
+    return luminosity_percentage, rain_percentage
 
 # Função para enviar os dados via API
 def send_data_to_api(luminosity, rain, temperature, humidity):
@@ -74,14 +75,16 @@ def send_data_to_api(luminosity, rain, temperature, humidity):
 # Loop principal
 while True:
     # Leitura dos sensores
-    luminosity_percentage, rain_percentage, temperature, humidity = read_sensors()
+    # luminosity_percentage, rain_percentage, temperature, humidity = read_sensors()
+    luminosity_percentage, rain_percentage = read_sensors()
 
+    send_data_to_api(luminosity_percentage, rain_percentage, 0, 0)
     # Verifica se os dados foram lidos corretamente antes de enviar
-    if temperature is not None and humidity is not None:
-        # Enviar os dados para a API
-        send_data_to_api(luminosity_percentage, rain_percentage, temperature, humidity)
-    else:
-        print("Falha na leitura do sensor DHT, dados não enviados.")
+    # if temperature is not None and humidity is not None:
+    #     # Enviar os dados para a API
+    #     send_data_to_api(luminosity_percentage, rain_percentage, temperature, humidity)
+    # else:
+    #     print("Falha na leitura do sensor DHT, dados não enviados.")
 
     # Aguardar um intervalo antes da próxima leitura
-    time.sleep(10)  # Aguarda 10 segundos antes de enviar novamente
+    time.sleep(5)  # Aguarda 10 segundos antes de enviar novamente
